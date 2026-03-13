@@ -9,7 +9,11 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/$1"
     }
-  ]
+  ],
+  "env": {
+    "NEXTAUTH_URL": "https://second-brain-git-main-hjnn08197-max.vercel.app",
+    "NEXTAUTH_SECRET": "your-secret-key-change-in-production"
+  }
 }
