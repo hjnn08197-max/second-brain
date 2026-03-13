@@ -132,7 +132,7 @@ function Loading() {
 
 export default function Home() {
   const { data: session, status } = useSession()
-  const [memories] = useState<Memory[]>(sampleData)
+  const [memories, setMemories] = useState<Memory[]>(sampleData)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
@@ -160,10 +160,12 @@ export default function Home() {
 
   // 筛选逻辑
   const filteredMemories = useMemo(() => {
+    if (!memories || memories.length === 0) return []
     return memories.filter(m => {
+      if (!m) return false
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
-        if (!m.title.toLowerCase().includes(q) && !m.content.toLowerCase().includes(q)) {
+        if (!m.title?.toLowerCase().includes(q) && !m.content?.toLowerCase().includes(q)) {
           return false
         }
       }
@@ -176,9 +178,10 @@ export default function Home() {
 
   const modalResults = useMemo(() => {
     if (!modalSearch) return []
+    if (!memories || memories.length === 0) return []
     const q = modalSearch.toLowerCase()
     return memories.filter(m => 
-      m.title.toLowerCase().includes(q) || m.content.toLowerCase().includes(q)
+      m.title?.toLowerCase().includes(q) || m.content?.toLowerCase().includes(q)
     ).slice(0, 10)
   }, [memories, modalSearch])
 
@@ -198,8 +201,13 @@ export default function Home() {
   }, [])
 
   const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr)
-    return `${d.getMonth() + 1}月${d.getDate()}日`
+    if (!dateStr) return ''
+    try {
+      const d = new Date(dateStr)
+      return `${d.getMonth() + 1}月${d.getDate()}日`
+    } catch (error) {
+      return dateStr
+    }
   }
 
   return (
@@ -262,21 +270,26 @@ export default function Home() {
             </div>
           ) : (
             <div className="card-list">
-              {filteredMemories.map(m => (
-                <div key={m.id} className="card" onClick={() => setSelectedMemory(m)}>
-                  <div className="card-header">
-                    <span className="type-tag" style={{ color: typeColors[m.type] }}>
-                      {typeLabels[m.type]}
-                    </span>
-                    <span className="date">{formatDate(m.createdAt)}</span>
+              {filteredMemories.map(m => {
+                if (!m) return null
+                return (
+                  <div key={m.id} className="card" onClick={() => setSelectedMemory(m)}>
+                    <div className="card-header">
+                      <span className="type-tag" style={{ color: typeColors[m.type] }}>
+                        {typeLabels[m.type]}
+                      </span>
+                      <span className="date">{formatDate(m.createdAt)}</span>
+                    </div>
+                    <h3 className="card-title">{m.title}</h3>
+                    <p className="card-content">{m.content}</p>
+                    <div className="card-tags">
+                      {m.tags?.map(tag => (
+                        <span key={tag} className="tag">{tag}</span>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="card-title">{m.title}</h3>
-                  <p className="card-content">{m.content}</p>
-                  <div className="card-tags">
-                    {m.tags.map(tag => (<span key={tag} className="tag">{tag}</span>))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </section>
@@ -289,18 +302,21 @@ export default function Home() {
               value={modalSearch} onChange={(e) => setModalSearch(e.target.value)} autoFocus />
             <div className="modal-results">
               {modalSearch === '' && <p className="modal-hint">输入关键词开始搜索</p>}
-              {modalResults.map(m => (
-                <div key={m.id} className="modal-result" onClick={() => {
-                  setSelectedMemory(m)
-                  setShowSearchModal(false)
-                  setModalSearch('')
-                }}>
-                  <span className="type-tag" style={{ color: typeColors[m.type] }}>
-                    {typeLabels[m.type]}
-                  </span>
-                  <span className="result-title">{m.title}</span>
-                </div>
-              ))}
+              {modalResults.map(m => {
+                if (!m) return null
+                return (
+                  <div key={m.id} className="modal-result" onClick={() => {
+                    setSelectedMemory(m)
+                    setShowSearchModal(false)
+                    setModalSearch('')
+                  }}>
+                    <span className="type-tag" style={{ color: typeColors[m.type] }}>
+                      {typeLabels[m.type]}
+                    </span>
+                    <span className="result-title">{m.title}</span>
+                  </div>
+                )
+              })}
               {modalSearch && modalResults.length === 0 && <p className="modal-empty">未找到相关结果</p>}
             </div>
             <div className="modal-footer"><kbd>ESC</kbd> 关闭</div>
@@ -320,7 +336,9 @@ export default function Home() {
             <h2 className="detail-title">{selectedMemory.title}</h2>
             <p className="detail-content">{selectedMemory.content}</p>
             <div className="detail-tags">
-              {selectedMemory.tags.map(tag => (<span key={tag} className="tag">{tag}</span>))}
+              {selectedMemory.tags?.map(tag => (
+                <span key={tag} className="tag">{tag}</span>
+              ))}
             </div>
             <button className="close-btn" onClick={() => setSelectedMemory(null)}>关闭</button>
           </div>
