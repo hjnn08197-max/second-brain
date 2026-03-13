@@ -1,0 +1,23 @@
+{
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NEXTAUTH_URL": "https://second-brain-git-main-hjnn08197-max.vercel.app",
+    "NEXTAUTH_SECRET": "your-secret-key-change-in-production"
+  },
+  "functions": {
+    "app/api/auth/**": {
+      "maxDuration": 30
+    }
+  }
+}
