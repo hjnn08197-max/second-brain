@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "NEXTAUTH_URL": "https://second-brain-git-main-hjnn08197-max.vercel.app",
-    "NEXTAUTH_SECRET": "your-secret-key-change-in-production"
+    "NEXTAUTH_URL": "https://second-brain.vercel.app",
+    "NEXTAUTH_SECRET": "fdae43735e8735eba9f457fd693d7369"
   }
 }
