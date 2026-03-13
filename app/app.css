@@ -398,14 +398,30 @@ body {
   }
   
   .logout-btn {
-    padding: 8px 16px;
-    background: #ff4444;
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    font-size: 14px;
-  }
+  padding: 8px 16px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.wecom-btn {
+  padding: 8px 16px;
+  background: #07C160;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.wecom-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
   
   .detail-modal {
     margin: 16px;

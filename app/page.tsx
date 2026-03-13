@@ -133,12 +133,37 @@ function Loading() {
 export default function Home() {
   const { data: session, status } = useSession()
   const [memories, setMemories] = useState<Memory[]>(sampleData)
+  const [wecomChats, setWecomChats] = useState<Memory[]>([])
+  const [isLoadingWecom, setIsLoadingWecom] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [modalSearch, setModalSearch] = useState('')
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null)
+
+  // 加载企业微信聊天记录
+  const fetchWecomChats = async () => {
+    try {
+      setIsLoadingWecom(true)
+      const response = await fetch('/api/wecom/chat-history')
+      if (response.ok) {
+        const data = await response.json()
+        setWecomChats(data)
+      } else {
+        console.error('获取企业微信聊天记录失败')
+      }
+    } catch (error) {
+      console.error('获取企业微信聊天记录失败:', error)
+    } finally {
+      setIsLoadingWecom(false)
+    }
+  }
+
+  // 初始化时获取企业微信聊天记录
+  useEffect(() => {
+    fetchWecomChats()
+  }, [])
 
   // 加载状态
   if (status === 'loading') {
@@ -158,10 +183,13 @@ export default function Home() {
     )
   }
 
+  // 合并所有数据
+  const allMemories = [...memories, ...wecomChats]
+
   // 筛选逻辑
   const filteredMemories = useMemo(() => {
-    if (!memories || memories.length === 0) return []
-    return memories.filter(m => {
+    if (!allMemories || allMemories.length === 0) return []
+    return allMemories.filter(m => {
       if (!m) return false
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
@@ -174,16 +202,16 @@ export default function Home() {
       if (dateRange.end && m.createdAt > dateRange.end) return false
       return true
     })
-  }, [memories, searchQuery, selectedType, dateRange])
+  }, [allMemories, searchQuery, selectedType, dateRange])
 
   const modalResults = useMemo(() => {
     if (!modalSearch) return []
-    if (!memories || memories.length === 0) return []
+    if (!allMemories || allMemories.length === 0) return []
     const q = modalSearch.toLowerCase()
-    return memories.filter(m => 
+    return allMemories.filter(m => 
       m.title?.toLowerCase().includes(q) || m.content?.toLowerCase().includes(q)
     ).slice(0, 10)
-  }, [memories, modalSearch])
+  }, [allMemories, modalSearch])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -215,9 +243,19 @@ export default function Home() {
       <header className="header">
         <h1 className="title">第二大脑</h1>
         <div className="header-right">
-          <button className="search-btn" onClick={() => setShowSearchModal(true)}>
+          <button 
+            className="search-btn" 
+            onClick={() => setShowSearchModal(true)}
+          >
             <span>搜索...</span>
             <kbd>⌘K</kbd>
+          </button>
+          <button 
+            className="wecom-btn" 
+            onClick={fetchWecomChats}
+            disabled={isLoadingWecom}
+          >
+            {isLoadingWecom ? '加载中...' : '同步企业微信'}
           </button>
           <button className="logout-btn" onClick={() => signOut()}>退出</button>
         </div>
@@ -255,6 +293,9 @@ export default function Home() {
 
           <div className="stats">
             <span>共 {filteredMemories.length} 条</span>
+            {wecomChats.length > 0 && (
+              <span style={{ marginLeft: '10px' }}>企业微信: {wecomChats.length} 条</span>
+            )}
           </div>
         </aside>
 
