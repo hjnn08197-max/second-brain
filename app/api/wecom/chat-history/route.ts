@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     )
     
     if (!tokenResponse.ok) {
+      console.error('获取access_token失败:', await tokenResponse.text())
       return NextResponse.json(
         { error: '获取access_token失败' },
         { status: 500 }
@@ -29,9 +30,11 @@ export async function GET(request: NextRequest) {
     }
 
     const tokenData = await tokenResponse.json()
+    console.log('tokenData:', tokenData)
     const accessToken = tokenData.access_token
 
     if (!accessToken) {
+      console.error('获取access_token失败，返回数据:', tokenData)
       return NextResponse.json(
         { error: '获取access_token失败' },
         { status: 500 }
